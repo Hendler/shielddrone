@@ -1,8 +1,5 @@
 import { Box, Container, Heading } from '@chakra-ui/react'
-import dynamic from 'next/dynamic'
-
-// Import Scene component dynamically to avoid SSR issues with Three.js
-const Scene = dynamic(() => import('@/components/Scene'), { ssr: false })
+import DynamicScene from './components/DynamicScene'
 
 export default function Home() {
   return (
@@ -11,7 +8,7 @@ export default function Home() {
         <Heading my={4}>Welcome to My 3D Website</Heading>
       </Container>
       <Box h="600px">
-        <Scene />
+        <DynamicScene />
       </Box>
     </Box>
   )
