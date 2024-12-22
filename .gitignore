@@ -1,2 +1,4 @@
 *__pycache__
 Colosseum
+node_modules
+frontend/node_modules
