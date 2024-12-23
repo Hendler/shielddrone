@@ -41,21 +41,15 @@ Unsure whether to use Colosseum(Airsim), Parrot's Sphinx, or Nvida's Isaac Gym
 defending drones have higher max speed but start at y=0. 
 defending drones have complete situational awareness
 defending drones arranged near projected objects, center
+defending drones can collide with attacking drones and not be damaaged
 
 ## TODO 
 
 - direction arrow
-- heat trail based on previous positions, bezier curve between them
 - collision detection turn attacker to yellow, change size and stop, is_disabled state
 
 
 - implement instantiation of drone positions based on strategy for each
 - implement naive strategy for attacking drone
-
-
 - implement AI strategy for defending drone
- 
-
- add timestamp to drone history for replayability
-
-more strategies based on starting hieght, near the defense object 
+ - more strategies based on starting hieght, near the defense object 

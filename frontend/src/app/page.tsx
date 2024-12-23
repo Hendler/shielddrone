@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Box, Container, Heading, VStack, HStack, FormControl, FormLabel, NumberInput, NumberInputField, Select, Button, Switch } from '@chakra-ui/react'
+import { Box, Container, Heading, VStack, HStack, FormControl, FormLabel, NumberInput, NumberInputField, Select, Button, Switch, Text } from '@chakra-ui/react'
 import { WorldVisualization } from './components/WorldVisualization'
 
 interface GameConfig {
@@ -98,7 +98,8 @@ export default function Home() {
     
     ws.onmessage = (event) => {
       const newGameState = JSON.parse(event.data);
-      setGameState(newGameState);
+      console.log('New game state:', newGameState);
+      setGameState({...newGameState});
     };
 
     ws.onerror = (error) => {
@@ -292,6 +293,22 @@ export default function Home() {
                     ))}
                   </Select>
               </FormControl>
+              
+              <VStack spacing={2} align="stretch" mb={4}>
+                <Heading size="sm" color="white">Statistics</Heading>
+                <Box color="white">
+                  {console.log('Current game state:', gameState)}
+                  <Text>Live Attackers: {gameState?.attackers?.filter((a: any) => !a.is_disabled).length || 0}</Text>
+                  <Text>Disabled Attackers: {gameState?.attackers?.filter((a: any) => a.is_disabled).length || 0}</Text>
+                  <Text>Active Defenders: {gameState?.defenders?.length || 0}</Text>
+                  <Text>Live Assets: {gameState?.protected_objects?.filter((p: any) => !p.is_destroyed).length || 0}</Text>
+                  <Text>Destroyed Assets: {gameState?.protected_objects?.filter((p: any) => p.is_destroyed).length || 0}</Text>
+                </Box>
+              </VStack>
+
+              <Button colorScheme="blue" onClick={handleStartGame}>
+                Restart Game
+              </Button>
           </Box>
         </HStack>
       </Container>

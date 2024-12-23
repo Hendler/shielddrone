@@ -5,6 +5,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from lib.game import Game
 from asyncio import sleep
+import traceback
+import uvicorn
 
 app = FastAPI()
 
@@ -30,6 +32,8 @@ class GameConfig(BaseModel):
 @app.post("/startgame")
 async def start_game(config: GameConfig):
     try:
+        global game  # Add global declaration to modify the game object
+        game = Game()  # Reinitialize game object
         game.start_game(config.dict())
         return game.get_state()
     except ValueError as e:
@@ -44,15 +48,19 @@ async def websocket_endpoint(websocket: WebSocket):
     
     try:
         while True:
-            print("Updating game state")
-            game_state = game.update_game()
-            await websocket.send_json(game_state)
+            global game  #
+            if game:
+                print("Updating game state")
+                game_state = game.update_game()
+                await websocket.send_json(game_state)
             
             # Wait for 1 second before next update
             await sleep(.1)
             
     except Exception as e:
         print(f"WebSocket error: {e}")
+        
+        traceback.print_exc()
     finally:
         await websocket.close()
 
@@ -67,5 +75,5 @@ async def get_formations():
     return JSONResponse(content=Game.AVAILABLE_FORMATIONS)
 
 if __name__ == "__main__":
-    import uvicorn
+
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

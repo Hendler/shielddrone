@@ -15,6 +15,7 @@ class Position(BaseModel):
     yaw: float = 0.0
     roll: float = 0.0
 
+
     @property
     def speed(self) -> float:
         """Calculate the actual speed (magnitude of velocity vector)"""
@@ -32,7 +33,16 @@ class DroneObject(BaseModel):
     size: float
     color: str  
     type: str
+    is_disabled: bool = False
     history: list[Position] = []
+
+    def disable(self):
+        self.is_disabled = True 
+        self.size = self.size * 2.0
+        self.color = "yellow"
+        self.position.velocity_x = 0
+        self.position.velocity_y = 0
+        self.position.velocity_z = 0
 
     @property
     def max_speed(self) -> float:

@@ -126,46 +126,46 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
       return box;
     };
 
-    const createDirectionArrow = (position: any, velocity: any, speed: number) => {
-      const direction = new THREE.Vector3(
-        velocity.velocity_x,
-        velocity.velocity_y,
-        velocity.velocity_z
-      );
+    // const createDirectionArrow = (position: any, velocity: any, speed: number) => {
+    //   const direction = new THREE.Vector3(
+    //     velocity.velocity_x,
+    //     velocity.velocity_y,
+    //     velocity.velocity_z
+    //   );
       
-      if (direction.length() === 0) return null;
+    //   if (direction.length() === 0) return null;
 
-      // Increase visibility of arrows
-      const arrowLength = 20; // Fixed length instead of using speed
-      const headLength = arrowLength * 0.2; // 20% of arrow length
-      const headWidth = headLength * 0.5; // 50% of head length
+    //   // Increase visibility of arrows
+    //   const arrowLength = 20; // Fixed length instead of using speed
+    //   const headLength = arrowLength * 0.2; // 20% of arrow length
+    //   const headWidth = headLength * 0.5; // 50% of head length
       
-      const arrowHelper = new THREE.ArrowHelper(
-        direction.normalize(),
-        new THREE.Vector3(position.x, position.y, position.z),
-        arrowLength,
-        0xff0000, // Bright red color instead of white
-        headLength,
-        headWidth
-      );
+    //   const arrowHelper = new THREE.ArrowHelper(
+    //     direction.normalize(),
+    //     new THREE.Vector3(position.x, position.y, position.z),
+    //     arrowLength,
+    //     0xff0000, // Bright red color instead of white
+    //     headLength,
+    //     headWidth
+    //   );
       
-      return arrowHelper;
-    };
+    //   return arrowHelper;
+    // };
 
     worldData.attackers.forEach((attacker: any) => {
       const box = createBox(attacker.position, attacker.size, attacker.color);
       scene.add(box);
       
-      const arrow = createDirectionArrow(attacker.position, attacker, attacker.speed);
-      if (arrow) scene.add(arrow);
+      // const arrow = createDirectionArrow(attacker.position, attacker, attacker.speed);
+      // if (arrow) scene.add(arrow);
     });
 
     worldData.defenders.forEach((defender: any) => {
       const box = createBox(defender.position, defender.size, defender.color);
       scene.add(box);
       
-      const arrow = createDirectionArrow(defender.position, defender, defender.speed);
-      if (arrow) scene.add(arrow);
+      // const arrow = createDirectionArrow(defender.position, defender, defender.speed);
+      // if (arrow) scene.add(arrow);
     });
 
     worldData.protected_objects.forEach((object: any) => {
@@ -280,7 +280,7 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
         // Create control point for the curve (midpoint raised up)
         const midPoint = new THREE.Vector3(
           (nextPos.x + currentPos.x) / 2,
-          ((nextPos.y + currentPos.y) / 2) + 20,
+          ((nextPos.y + currentPos.y) / 2) + 1,
           (nextPos.z + currentPos.z) / 2
         );
 
@@ -332,7 +332,7 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
     });
 
     worldData.protected_objects?.forEach((object: any) => {
-      const box = createBox(object.position, object.size, '#00ff00');
+      const box = createBox(object.position, object.size, object.color);
       sceneRef.current?.add(box);
     });
   }, [worldData]);

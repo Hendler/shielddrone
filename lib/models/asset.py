@@ -6,6 +6,8 @@ class ProtectedObject(BaseModel):
     y: float
     z: float
     size: float
+    color: str = "green"
+    destroyed: bool = False
 
     @classmethod
     def create_random(cls):
@@ -16,6 +18,11 @@ class ProtectedObject(BaseModel):
             size=random.uniform(3, 20)
         )
 
+    def destroy(self):
+        self.destroyed = True
+        self.color = "#FFA500"
+        self.size = self.size * 2.0
+
 def create_protected_objects(num_protected_objects):
     objects = [ProtectedObject.create_random() for _ in range(num_protected_objects)]
     return [{
@@ -24,7 +31,8 @@ def create_protected_objects(num_protected_objects):
             "y": obj.y, 
             "z": obj.z
         },
-        "size": obj.size
+        "size": obj.size,
+        "color": obj.color,
+        "is_destroyed": obj.destroyed
     } for obj in objects]
-
 
