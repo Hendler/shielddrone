@@ -13,7 +13,7 @@ class ProtectedObject(BaseModel):
             x=random.uniform(0, 1000),
             y=0,  # Always 0 as specified
             z=random.uniform(0, 1000),
-            size=random.uniform(1, 5)
+            size=random.uniform(3, 20)
         )
 
 def create_protected_objects(num_protected_objects):

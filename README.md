@@ -38,13 +38,23 @@ Unsure whether to use Colosseum(Airsim), Parrot's Sphinx, or Nvida's Isaac Gym
 
 # TODO
 
-- add camera view to drone frontend
-- add select box to choose drone
+## primary 
+defending drones have higher max speed but start at y=0. 
+defending drones have complete situational awareness
+defending drones arranged near projected objects, center
+
+
+ change position of drones
+ render change in frontend via websocket
+
+
 - add direction arrow to drone frontend, based on history and goal
+
+
 - add maximum speed and turn rate to drone backend
 - add collision detection
-- add drone color changes to yello when disabled
-- add drone type 
+- add drone color changes to yellow when disabled
+- add drone type inside drone 
 - render previous positions of drone as lighter trails
 
 - implement instantiation of drone positions based on strategy for each

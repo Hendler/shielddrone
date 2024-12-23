@@ -123,22 +123,27 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
       return box;
     };
 
-    const createDirectionArrow = (position: any, history: any[]) => {
-      if (history.length < 2) return null;
-      
+    const createDirectionArrow = (position: any, velocity: any, speed: number) => {
       const direction = new THREE.Vector3(
-        history[1].x - history[0].x,
-        history[1].y - history[0].y,
-        history[1].z - history[0].z
+        velocity.velocity_x,
+        velocity.velocity_y,
+        velocity.velocity_z
       );
       
       if (direction.length() === 0) return null;
 
+      // Increase visibility of arrows
+      const arrowLength = 20; // Fixed length instead of using speed
+      const headLength = arrowLength * 0.2; // 20% of arrow length
+      const headWidth = headLength * 0.5; // 50% of head length
+      
       const arrowHelper = new THREE.ArrowHelper(
         direction.normalize(),
         new THREE.Vector3(position.x, position.y, position.z),
-        10,
-        0xffffff
+        arrowLength,
+        0xff0000, // Bright red color instead of white
+        headLength,
+        headWidth
       );
       
       return arrowHelper;
@@ -148,7 +153,7 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
       const box = createBox(attacker.position, attacker.size, attacker.color);
       scene.add(box);
       
-      const arrow = createDirectionArrow(attacker.position, attacker.history);
+      const arrow = createDirectionArrow(attacker.position, attacker, attacker.speed);
       if (arrow) scene.add(arrow);
     });
 
@@ -156,7 +161,7 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
       const box = createBox(defender.position, defender.size, defender.color);
       scene.add(box);
       
-      const arrow = createDirectionArrow(defender.position, defender.history);
+      const arrow = createDirectionArrow(defender.position, defender, defender.speed);
       if (arrow) scene.add(arrow);
     });
 

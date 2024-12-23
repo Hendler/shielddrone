@@ -23,7 +23,7 @@ export default function Home() {
   const [formations, setFormations] = useState<string[]>([])
   const [gameStarted, setGameStarted] = useState(false)
   const [config, setConfig] = useState<GameConfig>({
-    num_attackers: 3,
+    num_attackers: 30,
     num_defenders: 3,
     num_protected_objects: 3,
     strategy: '',
@@ -33,6 +33,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [selectedCamera, setSelectedCamera] = useState<CameraTarget>({ type: 'defender', index: 0 });
   const droneCameraRef = useRef<HTMLDivElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,7 +88,13 @@ export default function Home() {
   }
 
   const connectToWebSocket = () => {
+    // Close existing connection if any
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+
     const ws = new WebSocket('ws://localhost:8000/ws/gamestate');
+    wsRef.current = ws;
     
     ws.onmessage = (event) => {
       const newGameState = JSON.parse(event.data);
@@ -98,10 +105,20 @@ export default function Home() {
       console.error('WebSocket error:', error);
     };
 
-    return () => {
-      ws.close();
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+      wsRef.current = null;
     };
   };
+
+  // Clean up WebSocket on component unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
 
   return (
     <Box bg="black" color="white" minH="100vh">
