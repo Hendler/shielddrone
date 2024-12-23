@@ -45,7 +45,7 @@ Unsure whether to use Colosseum(Airsim), Parrot's Sphinx, or Nvida's Isaac Gym
 - add collision detection
 - add drone color changes to yello when disabled
 - add drone type 
-
+- render previous positions of drone as lighter trails
 
 - implement instantiation of drone positions based on strategy for each
 - impelment naive strategy for attacking drone

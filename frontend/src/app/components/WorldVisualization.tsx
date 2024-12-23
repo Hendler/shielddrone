@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
@@ -14,6 +14,25 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
+  const keysPressed = useRef<{ [key: string]: boolean }>({});
+
+  const setupKeyboardControls = useCallback(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      keysPressed.current[event.key.toLowerCase()] = true;
+    };
+
+    const onKeyUp = (event: KeyboardEvent) => {
+      keysPressed.current[event.key.toLowerCase()] = false;
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -26,7 +45,7 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
       75,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
-      1000
+      10000
     );
     cameraRef.current = camera;
     camera.position.set(200, 200, 200);
@@ -146,16 +165,45 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
 
     window.addEventListener('resize', handleResize);
 
+    const moveSpeed = 30.0;
     const animate = () => {
       requestAnimationFrame(animate);
+      
+      if (cameraRef.current) {
+        // Get the camera's forward direction (negative z-axis)
+        const forward = new THREE.Vector3();
+        cameraRef.current.getWorldDirection(forward);
+        
+        // Calculate the right vector by crossing forward with world up
+        const right = new THREE.Vector3();
+        right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+        
+        if (keysPressed.current['w']) {
+          cameraRef.current.position.add(forward.multiplyScalar(moveSpeed));
+        }
+        if (keysPressed.current['s']) {
+          cameraRef.current.position.add(forward.multiplyScalar(-moveSpeed));
+        }
+        if (keysPressed.current['a']) {
+          cameraRef.current.position.add(right.multiplyScalar(-moveSpeed));
+        }
+        if (keysPressed.current['d']) {
+          cameraRef.current.position.add(right.multiplyScalar(moveSpeed));
+        }
+      }
+
       if (controlsRef.current) controlsRef.current.update();
       if (rendererRef.current && cameraRef.current && sceneRef.current) {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
       }
     };
+    
+    const cleanupKeyboardControls = setupKeyboardControls();
+    
     animate();
 
     return () => {
+      cleanupKeyboardControls();
       controls.dispose();
       if (rendererRef.current) {
         rendererRef.current.dispose();
@@ -165,7 +213,7 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
       window.removeEventListener('resize', handleResize);
       scene.clear();
     };
-  }, [containerRef]);
+  }, [containerRef, setupKeyboardControls]);
 
   useEffect(() => {
     if (!worldData || !sceneRef.current) return;
@@ -198,17 +246,6 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
       sceneRef.current?.add(box);
     });
   }, [worldData]);
-
-  useEffect(() => {
-    const animate = () => {
-      requestAnimationFrame(animate);
-      if (controlsRef.current) controlsRef.current.update();
-      if (rendererRef.current && cameraRef.current && sceneRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
-    };
-    animate();
-  }, []);
 
   return null;
 }
