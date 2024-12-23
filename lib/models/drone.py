@@ -9,7 +9,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 FIXED_DELTA_TIME = 0.5  
-
+MAX_SIZE = 10
+SIZE = 5
 class Position(BaseModel):
     x: float
     y: float
@@ -45,7 +46,7 @@ class DroneObject(BaseModel):
 
     def disable(self):
         self.is_disabled = True 
-        self.size = self.size * 2.0
+        self.size = MAX_SIZE
         self.color = "yellow"
         self.position.velocity_x = 0
         self.position.velocity_y = 0
@@ -60,16 +61,15 @@ class DroneObject(BaseModel):
         return 0.0
 
     @classmethod
-    def create(cls, color, type, x_range=None, y_range=None, z_range=None, size_range=None):
+    def create(cls, color, type, x_range=None, y_range=None, z_range=None):
         # Use provided ranges if given, otherwise use defaults, ensuring minimums of 1
         x = random.uniform(1, x_range) if x_range else random.uniform(1, 500)
         y = random.uniform(1, y_range) if y_range else random.uniform(1, 500)
         z = random.uniform(1, z_range) if z_range else random.uniform(1, 500)
-        size = random.uniform(1, size_range) if size_range else random.uniform(3, 5)
         position = Position(x=x, y=y, z=z)
         return cls(
             position=position,
-            size=size,
+            size=SIZE,
             type=type,
             color=color,
             history=[position]

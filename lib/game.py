@@ -79,7 +79,7 @@ class Game:
                     closest_distance = distance
                     closest_obj = obj
             # If within 5 units, destroy object and disable drone
-            if closest_distance < 5:
+            if closest_distance < drone.max_speed:
                 closest_obj["is_destroyed"] = True
                 drone.disable()
             # Add check for closest_obj before accessing it
@@ -105,7 +105,7 @@ class Game:
                 if distance < closest_distance: 
                     closest_distance = distance
                     closest_attacker = attacker
-            if closest_distance < 5:
+            if closest_distance < drone.max_speed:
                 closest_attacker.disable()
             
             if closest_attacker is not None:
