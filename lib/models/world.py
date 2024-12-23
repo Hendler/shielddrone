@@ -2,6 +2,9 @@ from pydantic import BaseModel, Field
 from typing import Dict, Tuple, List
 import numpy as np
 
+
+
+
 class Terrain:
     """Represents different terrain types and their properties"""
     WATER = "water"
@@ -32,3 +35,20 @@ class World(BaseModel):
                         [Terrain.WATER, Terrain.GRASS, Terrain.MOUNTAIN, Terrain.SAND]
                     )
                     self.terrain_grid[(x, y, z)] = terrain_type
+
+    def world_to_threejs(self):
+        """Convert World model to Three.js compatible format"""
+        return {
+            "dimensions": {
+                "width": self.width,
+                "height": self.height,
+                "depth": self.depth
+            },
+            "terrain": [
+                {
+                    "position": list(pos),
+                    "type": terrain_type,
+                }
+                for pos, terrain_type in self.terrain_grid.items()
+            ]
+        }

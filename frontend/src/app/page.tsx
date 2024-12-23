@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { Box, Container, Heading, VStack, HStack, FormControl, FormLabel, NumberInput, NumberInputField, Select, Button, Switch } from '@chakra-ui/react'
 
 interface GameConfig {
-  attackingDrones: number;
-  defendingDrones: number;
-  assets: number;
+  num_attackers: number;
+  num_defenders: number;
+  num_protected_objects: number;
   strategy: string;
   formation: string;
 }
@@ -16,12 +16,13 @@ export default function Home() {
   const [formations, setFormations] = useState<string[]>([])
   const [gameStarted, setGameStarted] = useState(false)
   const [config, setConfig] = useState<GameConfig>({
-    attackingDrones: 3,
-    defendingDrones: 3,
-    assets: 3,
+    num_attackers: 3,
+    num_defenders: 3,
+    num_protected_objects: 3,
     strategy: '',
     formation: ''
   })
+  const [gameState, setGameState] = useState<any>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,17 +51,39 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(config)
-      })
+      });
       
       if (response.ok) {
-        setGameStarted(true)
-        // Connect to gamestate (you might want to use WebSocket here)
-        // Example: connectToGameState()
+        const initialGameState = await response.json();
+        setGameStarted(true);
+        
+        // Store the initial game state
+        setGameState(initialGameState);
+        
+        // Connect to WebSocket for future updates
+        connectToWebSocket();
       }
     } catch (error) {
-      console.error('Failed to start game:', error)
+      console.error('Failed to start game:', error);
     }
   }
+
+  const connectToWebSocket = () => {
+    const ws = new WebSocket('ws://localhost:8000/ws/gamestate');
+    
+    ws.onmessage = (event) => {
+      const newGameState = JSON.parse(event.data);
+      setGameState(newGameState);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      ws.close();
+    };
+  };
 
   return (
     <Box bg="black" color="white" minH="100vh">
@@ -88,8 +111,8 @@ export default function Home() {
                 <FormLabel color="white">Attacking Drones</FormLabel>
                 <NumberInput 
                   min={0} 
-                  value={config.attackingDrones}
-                  onChange={(_, value) => setConfig(prev => ({ ...prev, attackingDrones: value }))}
+                  value={config.num_attackers}
+                  onChange={(_, value) => setConfig(prev => ({ ...prev, num_attackers: value }))}
                 >
                   <NumberInputField />
                 </NumberInput>
@@ -97,14 +120,22 @@ export default function Home() {
 
               <FormControl>
                 <FormLabel color="white">Defending Drones</FormLabel>
-                <NumberInput min={0} defaultValue={3} precision={0}>
+                <NumberInput 
+                  min={0} 
+                  value={config.num_defenders}
+                  onChange={(_, value) => setConfig(prev => ({ ...prev, num_defenders: value }))}
+                >
                   <NumberInputField />
                 </NumberInput>
               </FormControl>
 
               <FormControl>
                 <FormLabel color="white">Assets</FormLabel>
-                <NumberInput min={0} defaultValue={3} precision={0}>
+                <NumberInput 
+                  min={0} 
+                  value={config.num_protected_objects}
+                  onChange={(_, value) => setConfig(prev => ({ ...prev, num_protected_objects: value }))}
+                >
                   <NumberInputField />
                 </NumberInput>
               </FormControl>
