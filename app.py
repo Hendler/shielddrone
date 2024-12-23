@@ -4,6 +4,7 @@ from typing import List
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from lib.game import Game
+from lib.models.drone import FIXED_DELTA_TIME
 from asyncio import sleep
 import traceback
 import uvicorn
@@ -21,6 +22,7 @@ app.add_middleware(
 
 # Replace the game_state dictionary with Game instance
 game = Game()
+gconfig = None
 
 class GameConfig(BaseModel):
     num_attackers: int
@@ -32,9 +34,11 @@ class GameConfig(BaseModel):
 @app.post("/startgame")
 async def start_game(config: GameConfig):
     try:
-        global game  # Add global declaration to modify the game object
+        global game 
+        global gconfig # Add global declaration to modify the game object
         game = Game()  # Reinitialize game object
-        game.start_game(config.dict())
+        gconfig= config.dict()
+        game.start_game(gconfig)
         return game.get_state()
     except ValueError as e:
         return JSONResponse(
@@ -45,24 +49,38 @@ async def start_game(config: GameConfig):
 @app.websocket("/ws/gamestate")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    connection_open = True
     
     try:
         while True:
-            global game  #
+            if not connection_open:
+                break
+                
+            global game
             if game:
                 print("Updating game state")
-                game_state = game.update_game()
-                await websocket.send_json(game_state)
+                try:
+                    game_state = game.update_game()
+                    await websocket.send_json(game_state)
+                except RuntimeError as ws_error:
+                    # WebSocket is already closed
+                    print(f"WebSocket communication error: {ws_error}")
+                    connection_open = False
+                    break
             
-            # Wait for 1 second before next update
-            await sleep(.1)
+            # Wait for 0.1 second before next update
+            await sleep(FIXED_DELTA_TIME)
             
     except Exception as e:
         print(f"WebSocket error: {e}")
-        
         traceback.print_exc()
     finally:
-        await websocket.close()
+        if connection_open:
+            try:
+                await websocket.close()
+            except RuntimeError:
+                # Ignore error if connection is already closed
+                pass
 
 @app.get("/strategies")
 async def get_strategies():

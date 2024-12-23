@@ -92,8 +92,24 @@ class Game:
             # If no valid targets remain, disable the drone
             else:
                 drone.disable()
-                   
+
+        active_attackers = [drone for drone in self.attackers if not drone.is_disabled]        
         active_defenders = [drone for drone in self.defenders if not drone.is_disabled]
         for drone in active_defenders:
+            closest_attacker = None
+            closest_distance = 1000000
+            for attacker in active_attackers:
+                distance = ((drone.position.x - attacker.position.x)**2 + 
+                          (drone.position.y - attacker.position.y)**2 + 
+                          (drone.position.z - attacker.position.z)**2)**0.5
+                if distance < closest_distance: 
+                    closest_distance = distance
+                    closest_attacker = attacker
+            if closest_distance < 5:
+                closest_attacker.disable()
+            
+            if closest_attacker is not None:
+                drone.update_towards_target(target_x=closest_attacker.position.x, target_y=closest_attacker.position.y, target_z=closest_attacker.position.z)
+
             drone.update_towards_target(target_x=0, target_y=0, target_z=0)
         return self.get_state()

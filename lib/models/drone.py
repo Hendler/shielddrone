@@ -2,6 +2,13 @@ from pydantic import BaseModel
 import random
 import time
 import math
+import logging
+
+# Add near top of file
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+FIXED_DELTA_TIME = 0.1  # 100ms fixed time step
 
 class Position(BaseModel):
     x: float
@@ -53,13 +60,13 @@ class DroneObject(BaseModel):
         return 0.0
 
     @classmethod
-    def create(cls, color, type,  x_range=None,  y_range=None, z_range=None, size_range=None):
-        # Use provided ranges if given, otherwise use defaults
-        x = random.uniform(0, x_range) if x_range else random.uniform(1, 1000)
-        y = random.uniform(1, y_range) if y_range else random.uniform(1, 100) # Must be > 0
-        z = random.uniform(0, z_range) if z_range else random.uniform(1, 1000)
-        size = random.uniform(1, size_range) if size_range else random.uniform(1, 5)
-        position = Position(x=x, y=y, z=z, speed=0)
+    def create(cls, color, type, x_range=None, y_range=None, z_range=None, size_range=None):
+        # Use provided ranges if given, otherwise use defaults, ensuring minimums of 1
+        x = random.uniform(1, x_range) if x_range else random.uniform(1, 500)
+        y = random.uniform(1, y_range) if y_range else random.uniform(1, 500)
+        z = random.uniform(1, z_range) if z_range else random.uniform(1, 500)
+        size = random.uniform(1, size_range) if size_range else random.uniform(3, 5)
+        position = Position(x=x, y=y, z=z)
         return cls(
             position=position,
             size=size,
@@ -91,11 +98,21 @@ class DroneObject(BaseModel):
         # Update current position
         self.position = new_position
 
-    def update_position_by_velocity(self, delta_time: float) -> None:
-        """Update drone position based on current velocity and time delta"""
+    def update_position_by_velocity(self, delta_time: float = FIXED_DELTA_TIME) -> None:
+        """Update drone position based on current velocity and fixed time step"""
+        # Log initial state
+        logger.info(f"Drone state before update:")
+        logger.info(f"  Position: ({self.position.x:.2f}, {self.position.y:.2f}, {self.position.z:.2f})")
+        logger.info(f"  Velocity: ({self.position.velocity_x:.2f}, {self.position.velocity_y:.2f}, {self.position.velocity_z:.2f})")
+        logger.info(f"  Delta time: {delta_time:.3f}")
+
         new_x = self.position.x + (self.position.velocity_x * delta_time)
         new_y = self.position.y + (self.position.velocity_y * delta_time)
         new_z = self.position.z + (self.position.velocity_z * delta_time)
+        
+        # Log calculated new position
+        logger.info(f"Drone state after update:")
+        logger.info(f"  New position: ({new_x:.2f}, {new_y:.2f}, {new_z:.2f})")
         
         self.update_position(
             new_x=new_x,
@@ -117,16 +134,17 @@ class DroneObject(BaseModel):
         direction_z = target_z - self.position.z
         
         # Normalize direction vector
-        magnitude = (direction_x**2 + direction_y**2 + direction_z**2)**0.5
+        magnitude = math.sqrt(direction_x**2 + direction_y**2 + direction_z**2)  # Using math.sqrt for clarity
         if magnitude > 0:
-            direction_x /= magnitude
-            direction_y /= magnitude
-            direction_z /= magnitude
+            # Calculate unit vector components
+            normalized_x = direction_x / magnitude
+            normalized_y = direction_y / magnitude
+            normalized_z = direction_z / magnitude
             
-            # Set velocity components using max speed
-            self.position.velocity_x = direction_x * self.max_speed
-            self.position.velocity_y = direction_y * self.max_speed
-            self.position.velocity_z = direction_z * self.max_speed
+            # Set velocity components using max speed and maintain original direction
+            self.position.velocity_x = normalized_x * self.max_speed
+            self.position.velocity_y = normalized_y * self.max_speed
+            self.position.velocity_z = normalized_z * self.max_speed
 
     def update_towards_target(self, target_x: float, target_y: float, target_z: float) -> None:
         """Update drone position towards target, accounting for time passed since last update"""
@@ -146,22 +164,10 @@ def create_drones(amount, type, color=None, strategy=None, formation=None):
         for _ in range(amount):
             drone = DroneObject.create(color=color, type=type)
             
-            # Calculate direction vector to origin
-            direction_x = -drone.position.x
-            direction_y = -drone.position.y
-            direction_z = -drone.position.z
-            
-            # Normalize direction vector
-            magnitude = (direction_x**2 + direction_y**2 + direction_z**2)**0.5
-            if magnitude > 0:
-                direction_x /= magnitude
-                direction_y /= magnitude 
-                direction_z /= magnitude
-            
-            # Set velocity components using max speed
-            drone.position.velocity_x = direction_x * drone.max_speed
-            drone.position.velocity_y = direction_y * drone.max_speed
-            drone.position.velocity_z = direction_z * drone.max_speed
+            # Initialize with zero velocity instead of pointing to (1,1,1)
+            drone.position.velocity_x = 0
+            drone.position.velocity_y = 0
+            drone.position.velocity_z = 0
             
             objects.append(drone)
         return objects

@@ -62,7 +62,7 @@ export default function Home() {
     fetchData()
   }, [])
 
-  const handleStartGame = async () => {
+  const handleStartGame = async (restart: boolean = false) => {
     try {
       const response = await fetch('http://localhost:8000/startgame', {
         method: 'POST',
@@ -79,8 +79,11 @@ export default function Home() {
         // Store the initial game state
         setGameState(initialGameState);
         
-        // Connect to WebSocket for future updates
-        connectToWebSocket();
+        // Connect to We  bSocket for future updates
+        console.log('restart type:', typeof restart, 'value:', restart);
+        if (!restart) {
+          connectToWebSocket();
+        }
       }
     } catch (error) {
       console.error('Failed to start game:', error);
@@ -252,7 +255,7 @@ export default function Home() {
                 </Select>
               </FormControl>
 
-              <Button colorScheme="blue" onClick={handleStartGame}>
+              <Button colorScheme="blue" onClick={() => handleStartGame(false)}>
                 Start Game
               </Button>
             </VStack>
@@ -272,7 +275,7 @@ export default function Home() {
                     color="white"
                     sx={{
                       'option': {
-                        color: 'black'
+                        color: 'black'     
                       }
                     }}
                   >
@@ -297,7 +300,6 @@ export default function Home() {
               <VStack spacing={2} align="stretch" mb={4}>
                 <Heading size="sm" color="white">Statistics</Heading>
                 <Box color="white">
-                  {console.log('Current game state:', gameState)}
                   <Text>Live Attackers: {gameState?.attackers?.filter((a: any) => !a.is_disabled).length || 0}</Text>
                   <Text>Disabled Attackers: {gameState?.attackers?.filter((a: any) => a.is_disabled).length || 0}</Text>
                   <Text>Active Defenders: {gameState?.defenders?.length || 0}</Text>
@@ -306,7 +308,7 @@ export default function Home() {
                 </Box>
               </VStack>
 
-              <Button colorScheme="blue" onClick={handleStartGame}>
+              <Button colorScheme="blue" onClick={() => handleStartGame(true)}>
                 Restart Game
               </Button>
           </Box>
