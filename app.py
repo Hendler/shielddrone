@@ -52,24 +52,18 @@ async def websocket_endpoint(websocket: WebSocket):
     connection_open = True
     
     try:
-        while True:
-            if not connection_open:
-                break
-                
-            global game
+            
+        while connection_open:
             if game:
-                print("Updating game state")
                 try:
                     game_state = game.update_game()
                     await websocket.send_json(game_state)
                 except RuntimeError as ws_error:
-                    # WebSocket is already closed
                     print(f"WebSocket communication error: {ws_error}")
                     connection_open = False
                     break
             
-            # Wait for 0.1 second before next update
-            await sleep(FIXED_DELTA_TIME)
+            await sleep(FIXED_DELTA_TIME/10)
             
     except Exception as e:
         print(f"WebSocket error: {e}")
@@ -79,7 +73,6 @@ async def websocket_endpoint(websocket: WebSocket):
             try:
                 await websocket.close()
             except RuntimeError:
-                # Ignore error if connection is already closed
                 pass
 
 @app.get("/strategies")

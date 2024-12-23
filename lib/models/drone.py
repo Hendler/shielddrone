@@ -8,7 +8,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-FIXED_DELTA_TIME = 0.1  # 100ms fixed time step
+FIXED_DELTA_TIME = 0.5  
 
 class Position(BaseModel):
     x: float
@@ -56,7 +56,7 @@ class DroneObject(BaseModel):
         if self.type == "attacking":
             return 10.0
         elif self.type == "defending":
-            return 16.0
+            return 35.0
         return 0.0
 
     @classmethod
@@ -94,13 +94,14 @@ class DroneObject(BaseModel):
         
         # Add current position to history before updating
         self.history.append(self.position)
-        
+        self.refresh_history()
         # Update current position
         self.position = new_position
 
-    def update_position_by_velocity(self, delta_time: float = FIXED_DELTA_TIME) -> None:
+    def update_position_by_velocity(self) -> None:
         """Update drone position based on current velocity and fixed time step"""
         # Log initial state
+        delta_time: float = FIXED_DELTA_TIME
         logger.info(f"Drone state before update:")
         logger.info(f"  Position: ({self.position.x:.2f}, {self.position.y:.2f}, {self.position.z:.2f})")
         logger.info(f"  Velocity: ({self.position.velocity_x:.2f}, {self.position.velocity_y:.2f}, {self.position.velocity_z:.2f})")
@@ -130,7 +131,7 @@ class DroneObject(BaseModel):
         """Update drone velocity direction to point towards a target position"""
         # Calculate direction vector to target
         direction_x = target_x - self.position.x
-        direction_y = target_y - self.position.y
+        direction_y = target_y - self.position.y # Ensure y direction is never negative
         direction_z = target_z - self.position.z
         
         # Normalize direction vector
@@ -149,14 +150,47 @@ class DroneObject(BaseModel):
     def update_towards_target(self, target_x: float, target_y: float, target_z: float) -> None:
         """Update drone position towards target, accounting for time passed since last update"""
         # Calculate time delta since last position update
-        current_time = time.time()
-        delta_time = current_time - self.position.timestamp
         
         # Update velocity direction towards target
         self.update_direction_to_target(target_x, target_y, target_z)
         
         # Update position using calculated velocity and time delta
-        self.update_position_by_velocity(delta_time)
+        self.update_position_by_velocity()
+
+    def refresh_history(self, distance_threshold: float = 1.0, time_threshold: float = 2.0) -> None:
+        """
+        Clean up position history by removing redundant points.
+        
+        Args:
+            distance_threshold: Minimum distance between points to keep (in units)
+            time_threshold: Minimum time between points to keep (in seconds)
+        """
+        if len(self.history) < 3:  # Keep if too few points
+            return
+
+        filtered_history = [self.history[0]]  # Always keep the first point
+        
+        for i in range(1, len(self.history) - 1):
+            prev_pos = filtered_history[-1]
+            curr_pos = self.history[i]
+            
+            # Calculate distance between points
+            distance = ((curr_pos.x - prev_pos.x) ** 2 + 
+                       (curr_pos.y - prev_pos.y) ** 2 + 
+                       (curr_pos.z - prev_pos.z) ** 2) ** 0.5
+            
+            # Calculate time difference
+            time_diff = curr_pos.timestamp - prev_pos.timestamp
+            
+            # Keep point if it represents significant change
+            if distance > distance_threshold or time_diff > time_threshold:
+                filtered_history.append(curr_pos)
+        
+        # Always keep the last point
+        if self.history[-1] != filtered_history[-1]:
+            filtered_history.append(self.history[-1])
+        
+        self.history = filtered_history
 
 def create_drones(amount, type, color=None, strategy=None, formation=None):
     if type == "attacking":

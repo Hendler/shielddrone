@@ -280,7 +280,7 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
         // Create control point for the curve (midpoint raised up)
         const midPoint = new THREE.Vector3(
           (nextPos.x + currentPos.x) / 2,
-          ((nextPos.y + currentPos.y) / 2) + 1,
+          ((nextPos.y + currentPos.y) / 2) ,
           (nextPos.z + currentPos.z) / 2
         );
 

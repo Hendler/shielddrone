@@ -64,6 +64,9 @@ export default function Home() {
 
   const handleStartGame = async (restart: boolean = false) => {
     try {
+      // Reset game state first
+      setGameState(null);
+      
       const response = await fetch('http://localhost:8000/startgame', {
         method: 'POST',
         headers: {
@@ -79,7 +82,7 @@ export default function Home() {
         // Store the initial game state
         setGameState(initialGameState);
         
-        // Connect to We  bSocket for future updates
+        // Connect to WebSocket for future updates
         console.log('restart type:', typeof restart, 'value:', restart);
         if (!restart) {
           connectToWebSocket();

@@ -64,10 +64,10 @@ class Game:
     def update_game(self) -> Dict[str, Any]:
         # Get active attackers
         active_attackers = [drone for drone in self.attackers if not drone.is_disabled]
-        
+        max_distance = 1000000
         for drone in active_attackers:
             # Check for collisions with protected objects
-            closest_distance = 1000000
+            closest_distance = max_distance
             closest_obj = None
             active_objects = [obj for obj in self.protected_objects if not obj["is_destroyed"]]
             for obj in active_objects:
@@ -97,7 +97,7 @@ class Game:
         active_defenders = [drone for drone in self.defenders if not drone.is_disabled]
         for drone in active_defenders:
             closest_attacker = None
-            closest_distance = 1000000
+            closest_distance = max_distance
             for attacker in active_attackers:
                 distance = ((drone.position.x - attacker.position.x)**2 + 
                           (drone.position.y - attacker.position.y)**2 + 
@@ -110,6 +110,7 @@ class Game:
             
             if closest_attacker is not None:
                 drone.update_towards_target(target_x=closest_attacker.position.x, target_y=closest_attacker.position.y, target_z=closest_attacker.position.z)
-
-            drone.update_towards_target(target_x=0, target_y=0, target_z=0)
+            else:
+                # return to home
+                drone.update_towards_target(target_x=0, target_y=0, target_z=0)
         return self.get_state()
