@@ -49,7 +49,7 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json(game_state)
             
             # Wait for 1 second before next update
-            await sleep(1)
+            await sleep(.1)
             
     except Exception as e:
         print(f"WebSocket error: {e}")

@@ -36,31 +36,21 @@ Unsure whether to use Colosseum(Airsim), Parrot's Sphinx, or Nvida's Isaac Gym
 - Parrot open source but may require more setup on docker or a linux cloude and I wanted local https://developer.parrot.com/docs/sphinx/index.html
 
 
-# TODO
+# features
 
-## primary 
 defending drones have higher max speed but start at y=0. 
 defending drones have complete situational awareness
 defending drones arranged near projected objects, center
 
+## TODO 
 
- change position of drones
- render change in frontend via websocket
+- direction arrow
+- heat trail based on previous positions, bezier curve between them
+- collision detection turn attacker to yellow, change size and stop, is_disabled state
 
-
-- add direction arrow to drone frontend, based on history and goal
-
-
-- add maximum speed and turn rate to drone backend
-- add collision detection
-- add drone color changes to yellow when disabled
-- add drone type inside drone 
-- render previous positions of drone as lighter trails
 
 - implement instantiation of drone positions based on strategy for each
-- impelment naive strategy for attacking drone
-
-- 
+- implement naive strategy for attacking drone
 
 
 - implement AI strategy for defending drone

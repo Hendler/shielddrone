@@ -102,14 +102,17 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
     
     const gridXZ = createHalfGrid(gridSize, gridDivisions, 0x444444);
     gridXZ.rotation.x = Math.PI / 2;
+    gridXZ.name = 'gridXZ';
     scene.add(gridXZ);
     
     const gridXY = createHalfGrid(gridSize, gridDivisions, 0x444444);
+    gridXY.name = 'gridXY';
     scene.add(gridXY);
     
-   const gridYZ = createHalfGrid(gridSize, gridDivisions, 0x444444);
+    const gridYZ = createHalfGrid(gridSize, gridDivisions, 0x444444);
     gridYZ.rotation.y = -Math.PI / 2;
-   scene.add(gridYZ);
+    gridYZ.name = 'gridYZ';
+    scene.add(gridYZ);
 
     const axesHelper = new THREE.AxesHelper(100);
     axesHelper.setColors(0xff0000, 0xff0000, 0xff0000);
@@ -250,7 +253,8 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
     if (!worldData || !sceneRef.current) return;
 
     const objectsToRemove = sceneRef.current.children.filter(
-      child => child instanceof THREE.Mesh || child instanceof THREE.ArrowHelper
+      child => (child instanceof THREE.Mesh || child instanceof THREE.ArrowHelper || child instanceof THREE.Line) 
+               && !child.name?.includes('grid')
     );
     objectsToRemove.forEach(obj => sceneRef.current?.remove(obj));
 
@@ -262,14 +266,69 @@ export function WorldVisualization({ containerRef, worldData, isDroneView, camer
       return box;
     };
 
+    // Updated function to create trail from position history
+    const createTrajectoryTrail = (positions: any[], color: string) => {
+      if (!positions || positions.length < 2) return null;
+
+      const curves: THREE.QuadraticBezierCurve3[] = [];
+      
+      // Create a curve for each pair of consecutive positions
+      for (let i = 0; i < positions.length - 1; i++) {
+        const currentPos = positions[i];
+        const nextPos = positions[i + 1];
+        
+        // Create control point for the curve (midpoint raised up)
+        const midPoint = new THREE.Vector3(
+          (nextPos.x + currentPos.x) / 2,
+          ((nextPos.y + currentPos.y) / 2) + 20,
+          (nextPos.z + currentPos.z) / 2
+        );
+
+        const curve = new THREE.QuadraticBezierCurve3(
+          new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z),
+          midPoint,
+          new THREE.Vector3(nextPos.x, nextPos.y, nextPos.z)
+        );
+        
+        curves.push(curve);
+      }
+
+      // Combine all curves into one set of points
+      const allPoints: THREE.Vector3[] = [];
+      curves.forEach(curve => {
+        allPoints.push(...curve.getPoints(20));
+      });
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(allPoints);
+      const material = new THREE.LineBasicMaterial({ 
+        color,
+        opacity: 0.5,
+        transparent: true
+      });
+      
+      return new THREE.Line(geometry, material);
+    };
+
     worldData.attackers?.forEach((attacker: any) => {
       const box = createBox(attacker.position, attacker.size, attacker.color || '#ff0000');
       sceneRef.current?.add(box);
+      
+      // Add trajectory trail using position history
+      if (attacker.history?.length) {
+        const trail = createTrajectoryTrail([...attacker.history, attacker.position], attacker.color || '#ff0000');
+        if (trail) sceneRef.current?.add(trail);
+      }
     });
 
     worldData.defenders?.forEach((defender: any) => {
       const box = createBox(defender.position, defender.size, defender.color || '#0000ff');
       sceneRef.current?.add(box);
+      
+      // Add trajectory trail using position history
+      if (defender.history?.length) {
+        const trail = createTrajectoryTrail([...defender.history, defender.position], defender.color || '#0000ff');
+        if (trail) sceneRef.current?.add(trail);
+      }
     });
 
     worldData.protected_objects?.forEach((object: any) => {
