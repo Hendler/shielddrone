@@ -44,25 +44,24 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
     controls.minPolarAngle = 0;
 
     const gridSize = 1000;
-    const gridDivisions = 10;
+    const gridDivisions = 100;
     
     const createHalfGrid = (size: number, divisions: number, color: number) => {
       const vertices = [];
-      const halfSize = size / 2;
       const step = size / divisions;
       
+      // Draw lines parallel to x-axis
       for (let i = 0; i <= divisions; i++) {
-        const y = i * step - halfSize;
-        if (y >= 0) {
-          vertices.push(-halfSize, y, 0);
-          vertices.push(halfSize, y, 0);
-        }
+        const y = i * step;
+        vertices.push(0, y, 0);      // Start from 0 instead of -halfSize
+        vertices.push(size, y, 0);    // Go to full size instead of halfSize
       }
       
+      // Draw lines parallel to y-axis
       for (let i = 0; i <= divisions; i++) {
-        const x = i * step - halfSize;
+        const x = i * step;
         vertices.push(x, 0, 0);
-        vertices.push(x, halfSize, 0);
+        vertices.push(x, size, 0);
       }
       
       const geometry = new THREE.BufferGeometry();
@@ -78,9 +77,9 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
     const gridXY = createHalfGrid(gridSize, gridDivisions, 0x444444);
     scene.add(gridXY);
     
-    const gridYZ = createHalfGrid(gridSize, gridDivisions, 0x444444);
-    gridYZ.rotation.y = Math.PI / 2;
-    scene.add(gridYZ);
+   const gridYZ = createHalfGrid(gridSize, gridDivisions, 0x444444);
+    gridYZ.rotation.y = -Math.PI / 2;
+   scene.add(gridYZ);
 
     const axesHelper = new THREE.AxesHelper(100);
     axesHelper.setColors(0xff0000, 0xff0000, 0xff0000);
