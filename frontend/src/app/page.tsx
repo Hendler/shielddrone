@@ -116,8 +116,8 @@ export default function Home() {
                   className="world-container"
                 />
                 <WorldVisualization
-                  worldData={gameState}
                   containerRef={containerRef}
+                  worldData={gameState}
                 />
               </>
             )}

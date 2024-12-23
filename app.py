@@ -2,9 +2,10 @@ from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
 from typing import List
 import json
-from lib.models.world import World
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from lib.models.drone import create_drones
+from lib.models.asset import create_protected_objects
  
 app = FastAPI()
 
@@ -65,20 +66,20 @@ async def start_game(config: GameConfig):
             content={"error": f"Invalid formation. Must be one of: {AVAILABLE_FORMATIONS}"}
         )
     
-    # Create and generate world
-    world = World(width=100, height=50, depth=100)
-    world.generate_terrain()
-    world_data = world.world_to_threejs()
-    
+    attacking_drones = create_drones(config.num_attackers, config.strategy, config.formation, "red")
+    defending_drones = create_drones(config.num_defenders, config.strategy, config.formation, "blue")
+    protected_objects = create_protected_objects(config.num_protected_objects)
+
     game_state = {
         "is_active": True,
-        "attackers": config.num_attackers,
-        "defenders": config.num_defenders,
-        "protected_objects": config.num_protected_objects,
+        "attackers": attacking_drones,
+        "defenders": defending_drones,
+        "protected_objects": protected_objects,
         "strategy": config.strategy,
         "formation": config.formation,
-        "world_data": world_data
     }
+
+    print(game_state)
     
     return game_state
 
@@ -111,4 +112,4 @@ async def get_formations():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
