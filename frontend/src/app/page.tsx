@@ -12,6 +12,12 @@ interface GameConfig {
   formation: string;
 }
 
+// Add new interface for camera selection
+interface CameraTarget {
+  type: 'attacker' | 'defender' | 'protected_object';
+  index: number;
+}
+
 export default function Home() {
   const [strategies, setStrategies] = useState<string[]>([])
   const [formations, setFormations] = useState<string[]>([])
@@ -25,6 +31,8 @@ export default function Home() {
   })
   const [gameState, setGameState] = useState<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [selectedCamera, setSelectedCamera] = useState<CameraTarget>({ type: 'defender', index: 0 });
+  const droneCameraRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,15 +105,16 @@ export default function Home() {
 
   return (
     <Box bg="black" color="white" minH="100vh">
-      <Container maxW="container.xl">
+       <Container maxW="90%" px={4} pt="50px">
         <Box position="absolute" top={4} left={4} width="200px">
           <img src="/images/SAI-Logo-Horizontal-White.svg" alt="SAI Logo" width="100%" />
         </Box>
+       
         <Heading my={4} color="white">Drone Shield Demo</Heading>
         
         <HStack spacing={4} align="start">
-          {/* Left Column - 45% */}
-          <Box w="45%">
+          {/* Left Column - Main view - 45% */}
+          <Box w="45%" mt={4}>
             {gameStarted && gameState && (
               <>
                 <Box
@@ -123,9 +132,26 @@ export default function Home() {
             )}
           </Box>
 
-          {/* Middle Column - 45% */}
+          {/* Middle Column - 45% - Drone Camera View */}
           <Box w="45%">
-            {/* Content for middle column */}
+            {gameStarted && gameState && (
+              <>
+
+                <Box
+                  ref={droneCameraRef}
+                  w="100%"
+                  h="600px"
+                  border="2px solid blue"
+                  className="drone-camera"
+                />
+                <WorldVisualization
+                  containerRef={droneCameraRef}
+                  worldData={gameState}
+                  isDroneView={true}
+                  cameraTarget={selectedCamera}
+                />
+              </>
+            )}
           </Box>
 
           {/* Right Column - 10% - Controls */}
@@ -211,12 +237,44 @@ export default function Home() {
               <Button colorScheme="blue" onClick={handleStartGame}>
                 Start Game
               </Button>
-
-              <FormControl display="none"> {/* Initially hidden */}
-                <FormLabel color="white">Camera View</FormLabel>
-                <Switch />
-              </FormControl>
             </VStack>
+          </Box>
+          <Box width="10%" display={gameStarted ? 'block': 'none'}>                
+            <FormControl mb={4}>
+                  <FormLabel color="white">Camera View</FormLabel>
+                  <Select
+                    value={`${selectedCamera.type}-${selectedCamera.index}`}
+                    onChange={(e) => {
+                      const [type, index] = e.target.value.split('-');
+                      setSelectedCamera({
+                        type: type as CameraTarget['type'],
+                        index: parseInt(index)
+                      });
+                    }}
+                    color="white"
+                    sx={{
+                      'option': {
+                        color: 'black'
+                      }
+                    }}
+                  >
+                    {gameState?.defenders.map((_: any, i: number) => (
+                      <option key={`defender-${i}`} value={`defender-${i}`}>
+                        Defender {i + 1}
+                      </option>
+                    ))}
+                    {gameState?.attackers.map((_: any, i: number) => (
+                      <option key={`attacker-${i}`} value={`attacker-${i}`}>
+                        Attacker {i + 1}
+                      </option>
+                    ))}
+                    {gameState?.protected_objects.map((_: any, i: number) => (
+                      <option key={`protected_object-${i}`} value={`protected_object-${i}`}>
+                        Asset {i + 1}
+                      </option>
+                    ))}
+                  </Select>
+              </FormControl>
           </Box>
         </HStack>
       </Container>

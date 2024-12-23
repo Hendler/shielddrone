@@ -7,9 +7,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 interface WorldVisualizationProps {
   containerRef: React.RefObject<HTMLDivElement>;
   worldData: any;
+  isDroneView?: boolean;
+  cameraTarget?: {
+    type: 'attacker' | 'defender' | 'protected_object';
+    index: number;
+  };
 }
 
-export function WorldVisualization({ containerRef, worldData }: WorldVisualizationProps) {
+export function WorldVisualization({ containerRef, worldData, isDroneView, cameraTarget }: WorldVisualizationProps) {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
@@ -48,8 +53,14 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
       10000
     );
     cameraRef.current = camera;
-    camera.position.set(200, 200, 200);
-    camera.lookAt(0, 0, 0);
+
+    if (isDroneView) {
+      camera.position.set(0, 50, 0);
+      camera.lookAt(0, 0, 0);
+    } else {
+      camera.position.set(200, 200, 200);
+      camera.lookAt(0, 0, 0);
+    }
 
     rendererRef.current = new THREE.WebGLRenderer({ antialias: true });
     rendererRef.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
@@ -165,31 +176,46 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
 
     window.addEventListener('resize', handleResize);
 
-    const moveSpeed = 30.0;
+    const moveSpeed = 10.0;
     const animate = () => {
       requestAnimationFrame(animate);
       
+      if (isDroneView && cameraTarget && worldData) {
+        const targetObject = worldData[`${cameraTarget.type}s`]?.[cameraTarget.index];
+        if (targetObject) {
+          const targetPos = targetObject.position;
+          camera.position.set(targetPos.x, targetPos.y + 50, targetPos.z);
+          camera.lookAt(targetPos.x, targetPos.y, targetPos.z);
+        }
+      }
+
       if (cameraRef.current) {
         // Get the camera's forward direction (negative z-axis)
         const forward = new THREE.Vector3();
         cameraRef.current.getWorldDirection(forward);
+        forward.y = 0; // Lock movement to the horizontal plane
+        forward.normalize();
         
         // Calculate the right vector by crossing forward with world up
         const right = new THREE.Vector3();
         right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
         
+        const moveDirection = new THREE.Vector3();
+        
         if (keysPressed.current['w']) {
-          cameraRef.current.position.add(forward.multiplyScalar(moveSpeed));
+          moveDirection.add(forward.multiplyScalar(moveSpeed));
         }
         if (keysPressed.current['s']) {
-          cameraRef.current.position.add(forward.multiplyScalar(-moveSpeed));
+          moveDirection.sub(forward.multiplyScalar(moveSpeed));
         }
         if (keysPressed.current['a']) {
-          cameraRef.current.position.add(right.multiplyScalar(-moveSpeed));
+          moveDirection.sub(right.multiplyScalar(moveSpeed));
         }
         if (keysPressed.current['d']) {
-          cameraRef.current.position.add(right.multiplyScalar(moveSpeed));
+          moveDirection.add(right.multiplyScalar(moveSpeed));
         }
+        
+        cameraRef.current.position.add(moveDirection);
       }
 
       if (controlsRef.current) controlsRef.current.update();
@@ -213,7 +239,7 @@ export function WorldVisualization({ containerRef, worldData }: WorldVisualizati
       window.removeEventListener('resize', handleResize);
       scene.clear();
     };
-  }, [containerRef, setupKeyboardControls]);
+  }, [containerRef, setupKeyboardControls, isDroneView, cameraTarget]);
 
   useEffect(() => {
     if (!worldData || !sceneRef.current) return;
