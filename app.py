@@ -67,7 +67,7 @@ async def start_game(config: GameConfig):
     
     # Create and generate world
     world = World(width=100, height=50, depth=100)
-    world.generate_random_terrain()
+    world.generate_terrain()
     world_data = world.world_to_threejs()
     
     game_state = {

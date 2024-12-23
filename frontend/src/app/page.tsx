@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Box, Container, Heading, VStack, HStack, FormControl, FormLabel, NumberInput, NumberInputField, Select, Button, Switch } from '@chakra-ui/react'
+import { WorldVisualization } from './components/WorldVisualization'
 
 interface GameConfig {
   num_attackers: number;
@@ -23,6 +24,7 @@ export default function Home() {
     formation: ''
   })
   const [gameState, setGameState] = useState<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +38,14 @@ export default function Home() {
         
         setStrategies(strategiesData)
         setFormations(formationsData)
+        
+        // Set initial strategy and formation once data is loaded
+        if (strategiesData.length > 0) {
+          setConfig(prev => ({ ...prev, strategy: strategiesData[0] }))
+        }
+        if (formationsData.length > 0) {
+          setConfig(prev => ({ ...prev, formation: formationsData[0] }))
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error)
       }
@@ -96,7 +106,21 @@ export default function Home() {
         <HStack spacing={4} align="start">
           {/* Left Column - 45% */}
           <Box w="45%">
-            {/* Content for left column */}
+            {gameStarted && gameState && (
+              <>
+                <Box
+                  ref={containerRef}
+                  w="100%"
+                  h="600px"
+                  border="2px solid red"
+                  className="world-container"
+                />
+                <WorldVisualization
+                  worldData={gameState}
+                  containerRef={containerRef}
+                />
+              </>
+            )}
           </Box>
 
           {/* Middle Column - 45% */}
@@ -144,16 +168,24 @@ export default function Home() {
                 <FormLabel color="white">Strategy</FormLabel>
                 <Select 
                   value={config.strategy}
-                  onChange={(e) => setConfig(prev => ({ ...prev, strategy: e.target.value }))}
+                  onChange={(e) => {
+                    console.log('Selected strategy:', e.target.value);
+                    setConfig(prev => {
+                      console.log('Previous config:', prev);
+                      const newConfig = { ...prev, strategy: e.target.value };
+                      console.log('New config:', newConfig);
+                      return newConfig;
+                    });
+                  }}
                   color="white"
                   sx={{
                     'option': {
-                      color: 'black'  // Options need to remain dark for visibility against white background
+                      color: 'black'
                     }
                   }}
                 >
                   {strategies.map(strategy => (
-                    <option key={strategy}>{strategy}</option>
+                    <option key={strategy} value={strategy}>{strategy}</option>
                   ))}
                 </Select>
               </FormControl>

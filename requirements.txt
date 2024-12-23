@@ -2,7 +2,8 @@
 
 fastapi
 fastapi-cors
-
+numpy 
+noise
 
 
 
