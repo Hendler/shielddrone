@@ -45,11 +45,7 @@ defending drones can collide with attacking drones and not be damaaged
 
 ## TODO 
 
-- direction arrow
-- collision detection turn attacker to yellow, change size and stop, is_disabled state
-
-
-- implement instantiation of drone positions based on strategy for each
-- implement naive strategy for attacking drone
-- implement AI strategy for defending drone
- - more strategies based on starting hieght, near the defense object 
+- BUG: color doesn't change on collision with ground asset
+- FEATURE: formattions and strategies not implemented - should stay near assets or be aggressive or hybrid
+- FEATURE: store game output in file for training NN
+- FEATURE: path finding without perfectinformation - like radar range
