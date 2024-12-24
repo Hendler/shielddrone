@@ -23,7 +23,9 @@ Attacking drones try to fly into some number of Assets. Defeinding drones protec
 
 In the current nieve implemention, attacking drones have perfect information about the Assets, and the defending drones have perfect information about the attacking drones. Defending drones start from the ground and are 3x as fast as attacking drones. 
 
- 
+![screencapture](screencapture.gif)
+
+
 ## Setup
 
 Assumes you have `pyenv`  installed.
@@ -53,3 +55,8 @@ defending drones can collide with attacking drones and not be damaaged
 - FEATURE: store game output in file for training NN
 - FEATURE: path finding without perfect information - like radar range
 - FEATURE: simple coordination system for defending and attacking drones 
+
+
+## want to make a gif?
+
+    ffmpeg -i ~/Desktop/spl/Screen\ Recording\ 2024-12-23\ at\ 8.31.31 PM.mov -s 600x400 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > screencapture.gif
