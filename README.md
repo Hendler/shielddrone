@@ -21,7 +21,7 @@ Didn't make it this far!
 
 Attacking drones try to fly into some number of Assets. Defeinding drones protect the objects and intercept the first drone. 
 
-In the current nieve implemention, attacking drones have perfect information about the Assets, and the defending drones have perfect information about the attacking drones. Defending drones start from the ground and are 3x as fast as attacking drones. 
+In the current niave implemention, attacking drones have perfect information about the Assets, and the defending drones have perfect information about the attacking drones. Defending drones start from the ground and are 3x as fast as attacking drones. 
 
 ![screencapture](screencapture.gif)
 
