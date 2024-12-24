@@ -1,19 +1,29 @@
-# idea
+# Shield Drone
 
-Create a simulated environment that consists of a drones playing a game. 
-one drone tries to fly into an object, the other drone tries to protect the object and intercept the first drone. 
+Shield Drone is one day project to test Three.js, React, and Python for a simple simulation environment. Inspired by Anduril's RoadRunner, I wondered how a controller would make targeting decisions, and how to generate "training data".  
 
-The protecting drone must identify the both the drone and the projected object, whereas the first drone must only identify the object. 
 
-The questions I want to answer are:
+There are very sophisticated SIM environments for training drones like Nvidia Isaac Gym, but a simple simulation environment for quickly prototyping seemed fun. 
 
-1. How can I create a simulated environment that is easy to understand and modify?
-2. Can I use OpenAI realtime multi-modal as a control system? or Groq multi-modal open source llama3?
-3. What appens when I make the attacking drone smarter?
+## Questions
+
+> How can I create a drone strategy environment that is easy to understand and modify?
+
+First looked at [Colosseum]( https://github.com/CodexLabsLLC/Colosseum.git)(Airsim), [Parrot's Sphinx](https://developer.parrot.com/docs/sphinx/index.html), and Nvida's Isaac Gym   
+
+Settled on Python on the backend since I'm more familiar with it.
+
+> Can I use OpenAI realtime multi-modal as a control system? or Groq multi-modal open source llama3?
+
+Didn't make it this far!
+
+## Game
+
+Attacking drones try to fly into some number of Assets. Defeinding drones protect the objects and intercept the first drone. 
+
+In the current nieve implemention, attacking drones have perfect information about the Assets, and the defending drones have perfect information about the attacking drones. Defending drones start from the ground and are 3x as fast as attacking drones. 
 
  
-Decided to use three.js. React front, python backend.
-
 ## Setup
 
 Assumes you have `pyenv`  installed.
@@ -27,14 +37,6 @@ Assumes you have `pyenv`  installed.
     npm install 
     npm run dev
 
-## Tools considered
-
-    https://github.com/CodexLabsLLC/Colosseum.git
- 
- 
-Unsure whether to use Colosseum(Airsim), Parrot's Sphinx, or Nvida's Isaac Gym 
-- Parrot open source but may require more setup on docker or a linux cloude and I wanted local https://developer.parrot.com/docs/sphinx/index.html
-
 
 # features
 
@@ -47,6 +49,7 @@ defending drones can collide with attacking drones and not be damaaged
 
 - BUG: color doesn't change on collision with ground asset
 - BUG: camera view isn't current location of object
-- FEATURE: formattions and strategies not implemented - should stay near assets or be aggressive or hybrid
+- FEATURE: formations and strategies not implemented - should stay near assets or be aggressive or hybrid
 - FEATURE: store game output in file for training NN
-- FEATURE: path finding without perfectinformation - like radar range
+- FEATURE: path finding without perfect information - like radar range
+- FEATURE: simple coordination system for defending and attacking drones 

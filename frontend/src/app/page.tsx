@@ -130,11 +130,8 @@ export default function Home() {
   return (
     <Box bg="black" color="white" minH="100vh">
        <Container maxW="90%" px={4} pt="50px">
-        <Box position="absolute" top={4} left={4} width="200px">
-          <img src="/images/SAI-Logo-Horizontal-White.svg" alt="SAI Logo" width="100%" />
-        </Box>
        
-        <Heading my={4} color="white">Drone Shield Demo</Heading>
+        <Heading my={4} color="white">Shield Drone</Heading>
         
         <HStack spacing={4} align="start">
           {/* Left Column - Main view - 45% */}

@@ -62,6 +62,10 @@ class Game:
         }
     
     def update_game(self) -> Dict[str, Any]:
+        
+
+        
+
         # Get active attackers
         active_attackers = [drone for drone in self.attackers if not drone.is_disabled]
         max_distance = 1000000
@@ -95,6 +99,8 @@ class Game:
 
         active_attackers = [drone for drone in self.attackers if not drone.is_disabled]        
         active_defenders = [drone for drone in self.defenders if not drone.is_disabled]
+        # TODO track all defenders and attackers distances, choose the min of each
+        target_selection = {}
         for drone in active_defenders:
             closest_attacker = None
             closest_distance = max_distance
