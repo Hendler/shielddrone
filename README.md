@@ -59,4 +59,4 @@ defending drones can collide with attacking drones and not be damaaged
 
 ## want to make a gif?
 
-    ffmpeg -i ~/Desktop/spl/Screen\ Recording\ 2024-12-23\ at\ 8.31.31 PM.mov -s 600x400 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > screencapture.gif
+    ffmpeg -i ~/Desktop/spl/Screen\ Recording\ 2024-12-23\ at\ 8.31.31 PM.mov -s 600x400 -pix_fmt rgb24 -f gif - | gifsicle --optimize=3 > screencapture.gif
